@@ -62,7 +62,10 @@ function Header({ shadow }: { shadow: boolean }) {
   return (
     <View style={[{ backgroundColor: 'rgba(250,246,240,0.97)', borderBottomWidth: 1, borderColor: C.line, zIndex: 10 }, shadow && { shadowColor: '#5C4033', shadowOpacity: 0.12, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 6 }]}>
       <Wrap style={{ height: 80, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Pressable onPress={() => nav('top')}><Text style={{ fontFamily: F.serif, fontSize: 26, color: C.brown }}>NoveloLab</Text></Pressable>
+        <Pressable onPress={() => nav('top')} style={{ flexDirection: 'row', alignItems: 'center', gap: wide ? 10 : 8 }}>
+          <Image source={require('../../assets/images/logo-n.png')} style={{ width: wide ? 34 : 28, height: wide ? 40 : 33 }} resizeMode="contain" />
+          <Text style={{ fontFamily: F.serif, fontSize: wide ? 26 : 23, color: C.brown }}>NoveloLab</Text>
+        </Pressable>
         {wide && <View style={{ flexDirection: 'row', gap: 26 }}>{NAV.map(([n, t]) => <Pressable key={n} onPress={() => nav(t)}><Text style={{ fontFamily: F.sansS, fontSize: 13, letterSpacing: 3, color: C.text, textTransform: 'uppercase' }}>{n}</Text></Pressable>)}</View>}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: wide ? 12 : 8 }}>
           <Tap onPress={() => r.push(user ? '/account' : '/accedi')} style={{ width: bs, height: bs, borderRadius: bs / 2, borderWidth: 1, borderColor: user ? C.brown : C.line, backgroundColor: user ? C.brown : 'transparent', alignItems: 'center', justifyContent: 'center' }}><Ionicons name={user ? 'person' : 'person-outline'} size={18} color={user ? '#fff' : C.brown} /></Tap>
@@ -92,7 +95,7 @@ function Footer() {
         <View style={{ flex: wide ? 1.2 : undefined }}><Text style={{ fontFamily: F.sans, fontSize: 28, color: C.brown, marginBottom: 14 }}>NoveloLab</Text><P style={{ fontSize: 14, lineHeight: 28 }}>Creazioni in legno e materiali naturali personalizzate per la tua famiglia. Trasformiamo le tue emozioni in ricordi da toccare con mano.</P></View>
         <View style={{ flex: wide ? 1 : undefined }}><Hd t="Le creazioni" /><L t="Decorazioni Casa" f={() => to('Decorazioni Casa')} /><L t="Articoli Camerette" f={() => to('Bambini')} /><L t="Regali Personalizzati" f={() => to('Cucina e Regali')} /><L t="Eventi e Bomboniere" f={() => to('Eventi')} /></View>
         <View style={{ flex: wide ? 1 : undefined }}><Hd t="Il laboratorio" /><L t="I Nostri Valori" f={() => r.push({ pathname: '/', params: { s: 'valori', t: String(Date.now()) } })} /><L t="Richiedi un'Idea" f={() => r.push('/su-misura')} /><L t="Condizioni" f={() => r.push('/condizioni')} /></View>
-        <View style={{ flex: wide ? 1 : undefined }}><Hd t="Contatti" /><P style={{ fontSize: 14, lineHeight: 28, marginBottom: 14 }}>Siamo a disposizione per aiutarti a progettare il tuo regalo speciale.</P><Btn kind="outline" title="Scrivici un'email" outer={{ alignSelf: 'flex-start' }} onPress={() => Linking.openURL('mailto:info@novelolab.it')} /></View>
+        <View style={{ flex: wide ? 1 : undefined }}><Hd t="Contatti" /><P style={{ fontSize: 14, lineHeight: 28, marginBottom: 14 }}>Siamo a disposizione per aiutarti a progettare il tuo regalo speciale.</P><Btn kind="outline" title="Contattaci" outer={{ alignSelf: 'flex-start' }} onPress={() => r.push('/contatti')} /></View>
       </Wrap>
       <View style={{ borderTopWidth: 1, borderColor: C.line, paddingVertical: 22 }}><Text style={{ textAlign: 'center', fontFamily: F.sansS, fontSize: 12, letterSpacing: 3, color: C.text }}>© 2026 NOVELOLAB</Text></View>
     </View>

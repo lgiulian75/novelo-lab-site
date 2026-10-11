@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Page, Wrap, Label, H, P, Btn, Reveal, useWide } from '../components/ui';
 import { C, F, inp } from '../lib/theme';
-import { sendRequest } from '../lib/api';
+import { sendRequest, toForm } from '../lib/api';
 const FileChip = ({ name, onRemove }: { name: string; onRemove: () => void }) => {
   const a = useRef(new Animated.Value(0)).current;
   useEffect(() => { Animated.spring(a, { toValue: 1, useNativeDriver: true, bounciness: 8 }).start(); }, []);
@@ -19,16 +19,16 @@ const FileChip = ({ name, onRemove }: { name: string; onRemove: () => void }) =>
 const Fld = ({ l, children }: any) => <View style={{ flex: 1, minWidth: 200, gap: 8 }}><Text style={{ fontFamily: F.sansS, fontSize: 12, letterSpacing: 3, color: C.brown, textTransform: 'uppercase' }}>{l}</Text>{children}</View>;
 export default function SuMisura() {
   const wide = useWide(); const [f, setF] = useState({ nome: '', email: '', telefono: '', materiale: 'Legno', nomi: '', date: '', descrizione: '' });
-  const [foto, setFoto] = useState<{ id: string; name: string }[]>([]); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [done, setDone] = useState(false);
+  const [foto, setFoto] = useState<{ id: string; name: string; uri: string; type: string }[]>([]); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [done, setDone] = useState(false);
   const set = (k: string) => (v: string) => setF({ ...f, [k]: v });
   const pick = async () => {
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8, allowsMultipleSelection: true });
-    if (!r.canceled) setFoto(l => [...l, ...r.assets.map((x, i) => ({ id: Date.now() + '-' + i, name: x.fileName || x.uri.split('/').pop() || 'foto' }))]);
+    if (!r.canceled) setFoto(l => [...l, ...r.assets.map((x, i) => ({ id: Date.now() + '-' + i, name: x.fileName || x.uri.split('/').pop() || 'foto', uri: x.uri, type: x.mimeType || 'image/jpeg' }))]);
   };
   const send = async () => {
     if (!f.nome.trim() || !/\S+@\S+\.\S+/.test(f.email) || f.descrizione.trim().length < 10) return setErr('Inserisci nome, email valida e una descrizione (almeno 10 caratteri).');
     setErr(''); setBusy(true);
-    try { await sendRequest({ ...f, foto: foto.map(x => x.name) }); setDone(true); } catch { setErr('Invio non riuscito, riprova.'); }
+    try { await sendRequest(await toForm(f, foto)); setDone(true); } catch { setErr('Invio non riuscito, riprova.'); }
     setBusy(false);
   };
   const B = ({ ic, t }: any) => <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}><Ionicons name={ic} size={18} color={C.accent} /><Text style={{ flex: 1, fontFamily: F.sans, color: C.text }}>{t}</Text></View>;
