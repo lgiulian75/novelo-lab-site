@@ -3,9 +3,10 @@ import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Page, Wrap, Label, H, P, Btn, Reveal, useGrid } from '../components/ui';
 import ProductCard from '../components/ProductCard';
-import { PRODUCTS } from '../lib/data';
+import { useCatalog } from '../lib/catalog';
 import { useFav } from '../lib/fav';
 export default function Preferiti() {
+  const { products: PRODUCTS } = useCatalog();
   const r = useRouter(); const { ids } = useFav(); const g = useGrid(4);
   const list = PRODUCTS.filter(p => ids.includes(p.id));
   return (

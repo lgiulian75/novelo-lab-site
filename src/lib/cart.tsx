@@ -1,14 +1,26 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { PRODUCTS } from './data';
+import { useCatalog, migrateId } from './catalog';
 type Line = { key: string; id: string; qty: number; note: string };
 type Ctx = { lines: Line[]; count: number; subtotal: number; discount: number; coupon: string; applyCoupon: (c: string) => boolean; add: (id: string, note?: string, qty?: number) => void; setQty: (key: string, q: number) => void; clear: () => void };
 const K = 'novelolab-cart';
 const Cx = createContext<Ctx>(null as any);
 export const useCart = () => useContext(Cx);
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [lines, setLines] = useState<Line[]>([]); const [coupon, setCoupon] = useState(''); const [ready, setReady] = useState(false);
+  const { products: PRODUCTS, loading, error } = useCatalog(); const [lines, setLines] = useState<Line[]>([]); const [coupon, setCoupon] = useState(''); const [ready, setReady] = useState(false);
   useEffect(() => { try { const v = (globalThis as any).localStorage?.getItem(K); if (v) setLines(JSON.parse(v)); } catch {} setReady(true); }, []);
   useEffect(() => { if (ready) try { (globalThis as any).localStorage?.setItem(K, JSON.stringify(lines)); } catch {} }, [lines, ready]);
+  useEffect(() => {
+    if (!ready || loading || error || !PRODUCTS.length) return;
+    setLines(ls => {
+      let ch = false; const out: Line[] = [];
+      for (const l of ls) {
+        const nid = migrateId(l.id, PRODUCTS); if (!nid) { ch = true; continue; } if (nid !== l.id) ch = true;
+        const key = nid + '|' + l.note; const ex = out.find(o => o.key === key);
+        if (ex) { ex.qty += l.qty; ch = true; } else out.push({ ...l, id: nid, key });
+      }
+      return ch ? out : ls;
+    });
+  }, [PRODUCTS, loading, error, ready]);
   const v = useMemo<Ctx>(() => {
     const subtotal = lines.reduce((s, l) => s + l.qty * (PRODUCTS.find(p => p.id === l.id)?.price ?? 0), 0);
     return {
@@ -18,6 +30,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setQty: (key, q) => setLines(ls => q <= 0 ? ls.filter(l => l.key !== key) : ls.map(l => l.key === key ? { ...l, qty: q } : l)),
       clear: () => { setLines([]); setCoupon(''); },
     };
-  }, [lines, coupon]);
+  }, [lines, coupon, PRODUCTS]);
   return <Cx.Provider value={v}>{children}</Cx.Provider>;
 }

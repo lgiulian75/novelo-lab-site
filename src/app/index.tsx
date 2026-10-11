@@ -5,9 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Page, Wrap, Label, H, P, Btn, Reveal, Anchor, Tap, useWide, useGrid } from '../components/ui';
 import ProductCard from '../components/ProductCard';
 import { C, F } from '../lib/theme';
-import { CATS, HERO, PRODUCTS } from '../lib/data';
+import { HERO } from '../lib/data';
+import { useCatalog } from '../lib/catalog';
 
 export default function Home() {
+  const { products: PRODUCTS, cats: CATS, loading, error } = useCatalog();
   const r = useRouter(); const wide = useWide(); const { s, cat, t } = useLocalSearchParams<{ s?: string; cat?: string; t?: string }>();
   const [filter, setFilter] = useState('Tutte'); const ctx = useRef<any>(null);
   const g4 = useGrid(4), g5 = useGrid(5);
@@ -52,6 +54,8 @@ export default function Home() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginBottom: 36 }}>
           {['Tutte', ...CATS].map(c => <Tap key={c} scale={1.06} onPress={() => setFilter(c)} style={{ backgroundColor: filter === c ? C.brown : 'transparent', borderWidth: 1, borderColor: filter === c ? C.brown : C.line, borderRadius: 30, paddingVertical: 10, paddingHorizontal: 18 }}><Text style={{ fontFamily: F.sansS, fontSize: 14, color: filter === c ? '#fff' : C.brown }}>{c === 'Tutte' ? 'Tutte le creazioni' : c}</Text></Tap>)}
         </View>
+        {loading && <Text style={{ fontFamily: F.sans, color: C.text, textAlign: 'center' }}>Caricamento del catalogo…</Text>}
+        {error && <Text style={{ fontFamily: F.sans, color: C.accent, textAlign: 'center', marginBottom: 12 }}>Catalogo non aggiornato: server non raggiungibile.</Text>}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: g5.gap }}>{list.map((p, i) => <ProductCard key={p.id + filter} p={p} i={i} width={g5.w} button />)}</View>
         <Reveal style={{ marginTop: 36, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, borderRadius: 40, padding: 24, flexDirection: 'row', gap: 12 }}>
           <Ionicons name="information-circle" size={22} color={C.accent} />

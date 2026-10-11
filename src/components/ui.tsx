@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { C, F } from '../lib/theme';
 import { useCart } from '../lib/cart';
 import { useFav } from '../lib/fav';
+import { useAuth } from '../lib/auth';
 
 type PCtx = { subs: Set<() => void>; pos: Record<string, number>; go: (id: string) => void; scrollTo: (y: number) => void };
 const PC = createContext<PCtx>(null as any);
@@ -54,7 +55,7 @@ export const Anchor = ({ id, children, style }: any) => { const { pos } = usePag
 
 const NAV: [string, string][] = [['Home', 'top'], ['Creazioni', 'creazioni'], ['Catalogo', 'catalogo'], ['Valori', 'valori'], ['Su misura', '/su-misura']];
 function Header({ shadow }: { shadow: boolean }) {
-  const r = useRouter(); const { go } = usePage(); const { count } = useCart(); const fav = useFav().ids.length; const wide = useWide(); const [open, setOpen] = useState(false);
+  const r = useRouter(); const { go } = usePage(); const { count } = useCart(); const fav = useFav().ids.length; const { user } = useAuth(); const wide = useWide(); const bs = wide ? 46 : 40; const [open, setOpen] = useState(false);
   const b = useRef(new Animated.Value(1)).current;
   useEffect(() => { if (count) Animated.sequence([Animated.timing(b, { toValue: 1.5, duration: 140, useNativeDriver: true }), Animated.spring(b, { toValue: 1, useNativeDriver: true })]).start(); }, [count]);
   const nav = (t: string) => { setOpen(false); t.startsWith('/') ? r.push(t as any) : go(t); };
@@ -63,12 +64,13 @@ function Header({ shadow }: { shadow: boolean }) {
       <Wrap style={{ height: 80, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Pressable onPress={() => nav('top')}><Text style={{ fontFamily: F.serif, fontSize: 26, color: C.brown }}>NoveloLab</Text></Pressable>
         {wide && <View style={{ flexDirection: 'row', gap: 26 }}>{NAV.map(([n, t]) => <Pressable key={n} onPress={() => nav(t)}><Text style={{ fontFamily: F.sansS, fontSize: 13, letterSpacing: 3, color: C.text, textTransform: 'uppercase' }}>{n}</Text></Pressable>)}</View>}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Tap onPress={() => r.push('/preferiti')} style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: wide ? 12 : 8 }}>
+          <Tap onPress={() => r.push(user ? '/account' : '/accedi')} style={{ width: bs, height: bs, borderRadius: bs / 2, borderWidth: 1, borderColor: user ? C.brown : C.line, backgroundColor: user ? C.brown : 'transparent', alignItems: 'center', justifyContent: 'center' }}><Ionicons name={user ? 'person' : 'person-outline'} size={18} color={user ? '#fff' : C.brown} /></Tap>
+          <Tap onPress={() => r.push('/preferiti')} style={{ width: bs, height: bs, borderRadius: bs / 2, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="heart" size={18} color={C.brown} />
             {fav > 0 && <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: C.accent, minWidth: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 11, fontFamily: F.sansB }}>{fav}</Text></View>}
           </Tap>
-          <Tap onPress={() => r.push('/cart')} style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' }}>
+          <Tap onPress={() => r.push('/cart')} style={{ width: bs, height: bs, borderRadius: bs / 2, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="bag" size={18} color={C.brown} />
             {count > 0 && <Animated.View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: C.accent, minWidth: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', transform: [{ scale: b }] }}><Text style={{ color: '#fff', fontSize: 11, fontFamily: F.sansB }}>{count}</Text></Animated.View>}
           </Tap>

@@ -3,8 +3,7 @@ import { View, Text, TextInput, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Page, Wrap, Label, H, P, Btn, Reveal, useWide } from '../components/ui';
-import { inp } from './cart';
-import { C, F } from '../lib/theme';
+import { C, F, inp } from '../lib/theme';
 import { sendRequest } from '../lib/api';
 const FileChip = ({ name, onRemove }: { name: string; onRemove: () => void }) => {
   const a = useRef(new Animated.Value(0)).current;

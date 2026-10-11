@@ -3,14 +3,17 @@ import { View, Text, Image, TextInput, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Page, Wrap, Label, H, P, Btn, Reveal, Tap, useWide } from '../components/ui';
 import { C, F } from '../lib/theme';
-import { PRODUCTS, eur } from '../lib/data';
+import { eur } from '../lib/data';
+import { useCatalog } from '../lib/catalog';
 import { useCart } from '../lib/cart';
 import { sendOrder } from '../lib/api';
+import { useAuth } from '../lib/auth';
 export const inp = { borderWidth: 1, borderColor: C.line, borderRadius: 30, paddingHorizontal: 18, height: 48, fontFamily: F.sans, color: C.brown, backgroundColor: '#fff' } as const;
 export default function Cart() {
+  const { products: PRODUCTS } = useCatalog();
   const r = useRouter(); const wide = useWide(); const { lines, subtotal, discount, coupon, applyCoupon, setQty, clear } = useCart();
   const [code, setCode] = useState(''); const [msg, setMsg] = useState(''); const [co, setCo] = useState(false);
-  const [f, setF] = useState({ nome: '', email: '', telefono: '', indirizzo: '' }); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [done, setDone] = useState(false);
+  const { user } = useAuth(); const [f, setF] = useState({ nome: user?.name ?? '', email: user?.email ?? '', telefono: '', indirizzo: '' }); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [done, setDone] = useState(false);
   const total = subtotal - discount;
   const confirm = async () => {
     if (!f.nome.trim() || !/\S+@\S+\.\S+/.test(f.email) || !f.indirizzo.trim()) return setErr('Inserisci nome, email valida e indirizzo.');
@@ -25,7 +28,7 @@ export default function Cart() {
         <View style={{ flex: wide ? 1.6 : undefined, width: '100%' }}>
           <Label>Il tuo ordine</Label><H size={58} style={{ marginVertical: 14 }}>Carrello</H>
           {!lines.length && <View><P>Il carrello è vuoto.</P><Btn title="Scopri le creazioni" outer={{ alignSelf: 'flex-start', marginTop: 16 }} onPress={() => r.push({ pathname: '/', params: { s: 'catalogo', t: String(Date.now()) } })} /></View>}
-          {lines.map(l => { const p = PRODUCTS.find(x => x.id === l.id)!; return (
+          {lines.map(l => { const p = PRODUCTS.find(x => x.id === l.id); if (!p) return null; return (
             <Reveal key={l.key} style={{ backgroundColor: C.card, borderWidth: 1, borderColor: C.line, borderRadius: 30, padding: 16, flexDirection: 'row', gap: 16, marginBottom: 14 }}>
               <Image source={p.img} style={{ width: 110, height: 110, borderRadius: 18, backgroundColor: C.bg2 }} resizeMode="contain" />
               <View style={{ flex: 1 }}>

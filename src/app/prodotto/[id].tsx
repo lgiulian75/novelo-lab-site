@@ -5,13 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Page, Wrap, Label, H, P, Btn, Reveal, Tap, FavBtn, useWide } from '../../components/ui';
 import Gallery from '../../components/Gallery';
 import { C, F } from '../../lib/theme';
-import { PRODUCTS, eur } from '../../lib/data';
+import { eur } from '../../lib/data';
+import { useCatalog } from '../../lib/catalog';
 import { useCart } from '../../lib/cart';
 export default function Prodotto() {
+  const { products: PRODUCTS, loading } = useCatalog();
   const { id } = useLocalSearchParams<{ id: string }>(); const r = useRouter(); const wide = useWide(); const { add } = useCart();
   const p = PRODUCTS.find(x => x.id === id);
   const [note, setNote] = useState(''); const [qty, setQty] = useState(1); const [added, setAdded] = useState(false); const [copied, setCopied] = useState(false);
-  if (!p) return <Page><Wrap style={{ paddingTop: 80 }}><H size={36}>Prodotto non trovato</H><Btn title="Torna al catalogo" outer={{ alignSelf: 'flex-start', marginTop: 20 }} onPress={() => r.push('/')} /></Wrap></Page>;
+  if (!p) return <Page><Wrap style={{ paddingTop: 80 }}><H size={36}>{loading ? 'Caricamento…' : 'Prodotto non trovato'}</H><Btn title="Torna al catalogo" outer={{ alignSelf: 'flex-start', marginTop: 20 }} onPress={() => r.push('/')} /></Wrap></Page>;
   const buy = () => { add(p.id, note, qty); setAdded(true); setTimeout(() => setAdded(false), 1800); };
   const share = async () => {
     const text = `${p.name} – NoveloLab`;
