@@ -1,3 +1,5 @@
+import Turnstile from '../components/Turnstile';
+import { useTurnstile } from '../hooks/use-turnstile';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +20,7 @@ const FileChip = ({ name, onRemove }: { name: string; onRemove: () => void }) =>
 };
 const Fld = ({ l, children }: any) => <View style={{ flex: 1, minWidth: 200, gap: 8 }}><Text style={{ fontFamily: F.sansS, fontSize: 12, letterSpacing: 3, color: C.brown, textTransform: 'uppercase' }}>{l}</Text>{children}</View>;
 export default function SuMisura() {
+  const captcha = useTurnstile();
   const wide = useWide(); const [f, setF] = useState({ nome: '', email: '', telefono: '', materiale: 'Legno', nomi: '', date: '', descrizione: '' });
   const [foto, setFoto] = useState<{ id: string; name: string; uri: string; type: string }[]>([]); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [done, setDone] = useState(false);
   const set = (k: string) => (v: string) => setF({ ...f, [k]: v });
@@ -27,8 +30,12 @@ export default function SuMisura() {
   };
   const send = async () => {
     if (!f.nome.trim() || !/\S+@\S+\.\S+/.test(f.email) || f.descrizione.trim().length < 10) return setErr('Inserisci nome, email valida e una descrizione (almeno 10 caratteri).');
+    if (busy) return;
+    const turnstileToken = captcha.consumeToken();
+    if (!turnstileToken) return setErr('Completa la verifica di sicurezza.');
     setErr(''); setBusy(true);
-    try { await sendRequest(await toForm(f, foto)); setDone(true); } catch { setErr('Invio non riuscito, riprova.'); }
+    try { await sendRequest(await toForm({ ...f, 'cf-turnstile-response': turnstileToken }, foto)); setDone(true); } catch (e: any) { setErr(e.message || 'Invio non riuscito, riprova.'); }
+    captcha.reset();
     setBusy(false);
   };
   const B = ({ ic, t }: any) => <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}><Ionicons name={ic} size={18} color={C.accent} /><Text style={{ flex: 1, fontFamily: F.sans, color: C.text }}>{t}</Text></View>;
@@ -49,8 +56,9 @@ export default function SuMisura() {
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 18 }}><Fld l="Nomi da incidere"><TextInput placeholder="Es. Marco e Giulia" placeholderTextColor="#8C7A6E" value={f.nomi} onChangeText={set('nomi')} style={inp} /></Fld><Fld l="Date da incidere"><TextInput placeholder="Es. 12.09.2025" placeholderTextColor="#8C7A6E" value={f.date} onChangeText={set('date')} style={inp} /></Fld></View>
               <Fld l="Descrivi la tua creazione"><TextInput multiline placeholder="Raccontaci cosa immagini: a chi è destinata, l'occasione, la forma e le frasi che vorresti incidere" placeholderTextColor="#8C7A6E" value={f.descrizione} onChangeText={set('descrizione')} style={[inp, { height: 120, paddingTop: 14, borderRadius: 24, textAlignVertical: 'top' }]} /></Fld>
               <Fld l="Foto di riferimento"><Pressable onPress={pick} style={[inp, { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 6 }]}><Text style={{ fontFamily: F.sansS, color: C.brown }}>Scegli file</Text><Text style={{ fontFamily: F.sans, color: C.text }}>{foto.length ? `${foto.length} ${foto.length === 1 ? 'file selezionato' : 'file selezionati'}` : 'Nessun file selezionato'}</Text></Pressable>{foto.length > 0 && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{foto.map(x => <FileChip key={x.id} name={x.name} onRemove={() => setFoto(l => l.filter(y => y.id !== x.id))} />)}</View>}<Text style={{ fontFamily: F.sans, fontSize: 12, color: C.text }}>Facoltativa. Puoi caricare più foto: JPG, PNG o WEBP, fino a 10 MB.</Text></Fld>
+              <Turnstile action="custom_request" onToken={captcha.onToken} resetKey={captcha.resetKey} />
               {!!err && <Text style={{ color: '#b3261e', fontFamily: F.sans }}>{err}</Text>}
-              <Btn disabled={busy} title={busy ? 'Invio…' : 'Invia la tua richiesta'} onPress={send} />
+              <Btn disabled={busy || !captcha.token} title={busy ? 'Invio…' : 'Invia la tua richiesta'} onPress={send} />
             </>}
           </View>
         </Reveal>

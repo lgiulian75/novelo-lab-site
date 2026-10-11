@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
-// Metti qui l'URL del backend Laravel, es. 'http://localhost:8000/api'. Vuoto = modalità demo (nessuna chiamata reale).
-export const API_URL = 'http://localhost:8000/api';
+// URL completo delle API Laravel, incluso /api. Stringa vuota = modalità demo.
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000/api').replace(/\/+$/, '');
 let token: string | null = null;
 export const setAuthToken = (t: string | null) => { token = t; };
 export async function request(method: string, path: string, body?: any) {
